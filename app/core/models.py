@@ -62,3 +62,22 @@ class Member(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Band(models.Model):
+    """
+    Band object
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=255)
+    band_members = models.IntegerField()
+    tickets = models.DecimalField(max_digits=10, decimal_places=2)
+    link = models.CharField(max_length=255, blank=True)
+    members = models.ManyToManyField('Member')
+    tags = models.ManyToManyField('Tag')
+
+    def __str__(self):
+        return self.title

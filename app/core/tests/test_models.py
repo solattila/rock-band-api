@@ -68,3 +68,17 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(member), member.name)
+
+    def test_band_str(self):
+        """
+        Test the band string representation
+        :return:
+        """
+        band = models.Band.objects.create(
+            user=sample_user(),
+            title='Metallica',
+            band_members=4,
+            tickets=20.0
+        )
+
+        self.assertEqual(str(band), band.title)
