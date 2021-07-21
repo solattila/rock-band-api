@@ -29,7 +29,9 @@ class TagViewSet(viewsets.GenericViewSet,
         serializer.save(user=self.request.user)
 
 
-class MemberViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class MemberViewSet(viewsets.GenericViewSet,
+                    mixins.ListModelMixin,
+                    mixins.CreateModelMixin):
     """
     Manage members in the database
     """
@@ -41,3 +43,11 @@ class MemberViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     def get_queryset(self):
         """Return objects for the current authenticated user only"""
         return self.queryset.filter(user=self.request.user).order_by('-name')
+
+    def perform_create(self, serializer):
+        """
+        Create a new member
+        :param serializer:
+        :return: None
+        """
+        serializer.save(user=self.request.user)

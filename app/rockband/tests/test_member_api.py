@@ -76,3 +76,27 @@ class PrivateMemberApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]['name'], member.name)
+
+    def test_create_member_successful(self):
+        """
+        Test create a new ingredient
+        :return:
+        """
+        payload = {'name': 'Petrucci'}
+        self.client.post(MEMBERS_URL, payload)
+
+        exists = Member.objects.filter(
+            user=self.user,
+            name=payload['name'],
+        ).exists()
+        self.assertTrue(exists)
+
+    def test_create_member_invalid(self):
+        """
+        Test creating invalid member fails
+        :return:
+        """
+        payload = {'name': ''}
+        res = self.client.post(MEMBERS_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
