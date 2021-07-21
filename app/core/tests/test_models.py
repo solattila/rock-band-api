@@ -56,3 +56,15 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(tag), tag.name)
+
+    def test_members_str(self):
+        """
+        Test the ingredient string representation
+        :return:
+        """
+        member = models.Member.objects.create(
+            user=sample_user(),
+            name='Hendrix'
+        )
+
+        self.assertEqual(str(member), member.name)

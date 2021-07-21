@@ -5,6 +5,7 @@ from rockband import views
 
 router = DefaultRouter()
 router.register('tags', views.TagViewSet)
+router.register('members', views.MemberViewSet)
 
 app_name = 'rockband'
 
