@@ -2,7 +2,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Tag, Member
+from core.models import Tag, Member, Band
 
 from rockband import serializers
 
@@ -42,3 +42,20 @@ class MemberViewSet(BaseRockbandAttrViewSet):
 
     queryset = Member.objects.all()
     serializer_class = serializers.MemberSerializer
+
+
+class BandViewSet(viewsets.ModelViewSet):
+    """
+    Manage Bands in the database
+    """
+    serializer_class = serializers.BandSerializer
+    queryset = Band.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        """
+        Retrieve the receepies for the authenticated user
+        :return:
+        """
+        return self.queryset.filter(user=self.request.user)
