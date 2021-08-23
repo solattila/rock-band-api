@@ -42,3 +42,11 @@ class BandSerializer(serializers.ModelSerializer):
                   'tickets', 'link'
                   )
         read_only_fields = ('id',)
+
+
+class BandDetailSerializer(BandSerializer):
+    """
+    Serialize a band detail
+    """
+    members = MemberSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)

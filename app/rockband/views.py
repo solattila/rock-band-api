@@ -59,3 +59,13 @@ class BandViewSet(viewsets.ModelViewSet):
         :return:
         """
         return self.queryset.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        """
+        Return appropriate serializer class
+        :return:
+        """
+        if self.action == 'retrieve':
+            return serializers.BandDetailSerializer
+
+        return self.serializer_class

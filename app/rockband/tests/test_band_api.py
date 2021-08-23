@@ -5,11 +5,39 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Band
+from core.models import Band, Tag, Member
 
-from rockband.serializers import BandSerializer
+from rockband.serializers import BandSerializer, BandDetailSerializer
 
 BAND_URL = reverse('rockband:band-list')
+
+
+# /api/rockband/rockbands
+# /api/rockband/rockbands/1/
+
+
+def detail_url(band_id):
+    """
+    Return band detail url
+    """
+    return reverse('rockband:rockband-detail', args=[band_id])
+
+
+def sample_tag(user, name='Metal'):
+    """
+    Create and return a sample tag
+    """
+    return Tag.objects.create(user=user, name=name)
+
+
+def sample_member(user, name='Attila'):
+    """
+    Create and return a sample tag
+    :param user:
+    :param name:
+    :return:
+    """
+    return Member.objects.create(user=user, name=name)
 
 
 def sample_band(user, **params):
@@ -93,4 +121,19 @@ class PrivateBandApiTests(TestCase):
         serializer = BandSerializer(bands, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_view_band_detail(self):
+        """
+        Test viewing a band model
+        :return:
+        """
+        band = sample_band(user=self.user)
+        band.tags.add(sample_tag(user=self.user))
+        band.members.add(sample_member(user=self.user))
+
+        url = detail_url(band.id)
+        res = self.client.get(url)
+
+        serializer = BandDetailSerializer(band)
         self.assertEqual(res.data, serializer.data)
