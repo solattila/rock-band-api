@@ -50,3 +50,14 @@ class BandDetailSerializer(BandSerializer):
     """
     members = MemberSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+
+
+class BandImageSerializer(serializers.ModelSerializer):
+    """
+    Serializer for uploading images
+    """
+
+    class Meta:
+        model = Band
+        fields = ('id', 'image')
+        read_only_fields = ('id',)

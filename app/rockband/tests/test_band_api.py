@@ -1,3 +1,8 @@
+import tempfile
+import os
+
+from PIL import Image
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -12,8 +17,13 @@ from rockband.serializers import BandSerializer, BandDetailSerializer
 BAND_URL = reverse('rockband:band-list')
 
 
-# /api/rockband/rockbands
-# /api/rockband/rockbands/1/
+def image_upload_url(band_id):
+    """
+    Return URL for band image upload
+    :param band_id:
+    :return:
+    """
+    return reverse('rockband:band-upload-image', args=[band_id])
 
 
 def detail_url(band_id):
@@ -243,3 +253,45 @@ class PrivateBandApiTests(TestCase):
         self.assertEqual(band.tickets, payload['tickets'])
         tags = band.tags.all()
         self.assertEqual(len(tags), 0)
+
+
+class BandImageUploadTests(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            'user@rockbanddev.com',
+            'testpass'
+        )
+        self.client.force_authenticate(self.user)
+        self.band = sample_band(user=self.user)
+
+    def teardown(self):
+        self.band.image.delete()
+
+    def test_upload_image_to_band(self):
+        """
+        Test uploading an image to band
+        :return:
+        """
+        url = image_upload_url(self.band.id)
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as ntf:
+            img = Image.new('RGB', (10, 10))
+            img.save(ntf, format='JPEG')
+            ntf.seek(0)
+            res = self.client.post(url, {'image': ntf}, format='multipart')
+
+        self.band.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.band.image.path))
+
+    def test_upload_image_bad_request(self):
+        """
+        Test uploading an invalid image
+        :return:
+        """
+        url = image_upload_url(self.band.id)
+        res = self.client.post(url, {'image': 'notimage'}, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
