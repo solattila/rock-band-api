@@ -20,7 +20,7 @@ def detail_url(band_id):
     """
     Return band detail url
     """
-    return reverse('rockband:rockband-detail', args=[band_id])
+    return reverse('rockband:band-detail', args=[band_id])
 
 
 def sample_tag(user, name='Metal'):
