@@ -1,7 +1,21 @@
+import uuid
+import os
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
     PermissionsMixin
 from django.conf import settings
+
+
+def band_image_file_path(instance, filename):
+    """
+    Generate file path for new band image
+    :param instance:
+    :param filename:
+    :return:
+    """
+    ext = filename.split('.')[-1]
+    filename = f'{uuid.uuid4()}.{ext}'
+    return os.path.join('uploads/band/', filename)
 
 
 class UserManager(BaseUserManager):
@@ -78,6 +92,7 @@ class Band(models.Model):
     link = models.CharField(max_length=255, blank=True)
     members = models.ManyToManyField('Member')
     tags = models.ManyToManyField('Tag')
+    image = models.ImageField(null=True, upload_to=band_image_file_path)
 
     def __str__(self):
         return self.title

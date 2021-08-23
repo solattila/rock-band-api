@@ -199,3 +199,47 @@ class PrivateBandApiTests(TestCase):
         self.assertEqual(members.count(), 2)
         self.assertIn(member1, members)
         self.assertIn(member2, members)
+
+    def test_partial_update_band(self):
+        """
+        Test updating a band with patch
+        :return:
+        """
+        band = sample_band(user=self.user)
+        band.tags.add(sample_tag(user=self.user))
+        new_tag = sample_tag(user=self.user, name='Hard Rock')
+
+        payload = {
+            'title': 'Deep purple',
+            'tags': [new_tag.id]
+        }
+        url = detail_url(band.id)
+        self.client.patch(url, payload)
+
+        band.refresh_from_db()
+        self.assertEqual(band.title, payload['title'])
+        tags = band.tags.all()
+        self.assertEqual(len(tags), 1)
+        self.assertIn(new_tag, tags)
+
+    def test_full_update_band(self):
+        """
+        Test updating a band with put
+        :return:
+        """
+        band = sample_band(user=self.user)
+        band.tags.add(sample_tag(user=self.user))
+        payload = {
+            'title': 'Metallica',
+            'band_members': 4,
+            'tickets': 99.5
+        }
+        url = detail_url(band.id)
+        self.client.put(url, payload)
+
+        band.refresh_from_db()
+        self.assertEqual(band.title, payload['title'])
+        self.assertEqual(band.band_members, payload['band_members'])
+        self.assertEqual(band.tickets, payload['tickets'])
+        tags = band.tags.all()
+        self.assertEqual(len(tags), 0)
