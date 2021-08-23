@@ -69,3 +69,11 @@ class BandViewSet(viewsets.ModelViewSet):
             return serializers.BandDetailSerializer
 
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        """
+        Create a new band
+        :param serializer:
+        :return:
+        """
+        serializer.save(user=self.request.user)

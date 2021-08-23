@@ -137,3 +137,65 @@ class PrivateBandApiTests(TestCase):
 
         serializer = BandDetailSerializer(band)
         self.assertEqual(res.data, serializer.data)
+
+    def test_create_basic_band(self):
+        """
+        Test creating band
+        :return:
+        """
+        payload = {
+            'title': 'Iron Maiden',
+            'band_members': 6,
+            'tickets': 45.5
+        }
+
+        res = self.client.post(BAND_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        band = Band.objects.get(id=res.data['id'])
+        for key in payload.keys():
+            self.assertEqual(payload[key], getattr(band, key))
+
+    def test_create_band_with_tags(self):
+        """
+        Test creating a band with tags
+        :return:
+        """
+        tag1 = sample_tag(user=self.user, name='Power')
+        tag2 = sample_tag(user=self.user, name='Symphonic')
+        payload = {
+            'title': 'Stratovarius',
+            'tags': [tag1.id, tag2.id],
+            'band_members': 5,
+            'tickets': 29.9
+        }
+        res = self.client.post(BAND_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        band = Band.objects.get(id=res.data['id'])
+        tags = band.tags.all()
+        self.assertEqual(tags.count(), 2)
+        self.assertIn(tag1, tags)
+        self.assertIn(tag2, tags)
+
+    def test_create_band_with_members(self):
+        """
+        Test creating band with members
+        :return:
+        """
+        member1 = sample_member(user=self.user, name='Joakim')
+        member2 = sample_member(user=self.user, name='Par')
+        payload = {
+            'title': 'Sabaton',
+            'members': [member1.id, member2.id],
+            'band_members': 5,
+            'tickets': 29.9
+        }
+        res = self.client.post(BAND_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        band = Band.objects.get(id=res.data['id'])
+        members = band.members.all()
+        self.assertEqual(members.count(), 2)
+        self.assertIn(member1, members)
+        self.assertIn(member2, members)
