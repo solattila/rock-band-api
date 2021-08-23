@@ -295,3 +295,60 @@ class BandImageUploadTests(TestCase):
         res = self.client.post(url, {'image': 'notimage'}, format='multipart')
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_bands_by_tags(self):
+        """
+        Test returning bands with specific tags
+        :return:
+        """
+        band1 = sample_band(user=self.user, title='Sabaton')
+        band2 = sample_band(user=self.user, title='Slayer')
+        tag1 = sample_tag(user=self.user, name='Power')
+        tag2 = sample_tag(user=self.user, name='Thrash')
+        band1.tags.add(tag1)
+        band2.tags.add(tag2)
+        band3 = sample_band(user=self.user, title='Rage')
+
+        res = self.client.get(
+            BAND_URL,
+            {
+                'tags': f'{tag1.id},{tag2.id}'
+            }
+        )
+
+        serializer1 = BandSerializer(band1)
+        serializer2 = BandSerializer(band2)
+        serializer3 = BandSerializer(band3)
+
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
+
+    def test_filter_bands_by_members(self):
+        """
+        Test returning bands with specific members
+        :return:
+        """
+
+        band1 = sample_band(user=self.user, title='Sabaton')
+        band2 = sample_band(user=self.user, title='Slayer')
+        member1 = sample_member(user=self.user, name='Joakim')
+        member2 = sample_member(user=self.user, name='Araya')
+        band1.members.add(member1)
+        band2.members.add(member2)
+        band3 = sample_band(user=self.user, title='Rage')
+
+        res = self.client.get(
+            BAND_URL,
+            {
+                'members': f'{member1.id},{member2.id}'
+            }
+        )
+
+        serializer1 = BandSerializer(band1)
+        serializer2 = BandSerializer(band2)
+        serializer3 = BandSerializer(band3)
+
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)

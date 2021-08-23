@@ -55,12 +55,26 @@ class BandViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    def _params_to_ints(self, qs):
+        """Convert a list of string IDs to a list of integers"""
+        return [int(str_id) for str_id in qs.split(',')]
+
     def get_queryset(self):
         """
         Retrieve the receepies for the authenticated user
         :return:
         """
-        return self.queryset.filter(user=self.request.user)
+        tags = self.request.query_params.get('tags')
+        members = self.request.query_params.get('members')
+        queryset = self.queryset
+        if tags:
+            tag_ids = self._params_to_ints(tags)
+            queryset = queryset.filter(tags__id__in=tag_ids)
+        if members:
+            members_ids = self._params_to_ints(members)
+            queryset = queryset.filter(members__id__in=members_ids)
+
+        return queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
         """
