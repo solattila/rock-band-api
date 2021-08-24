@@ -5,7 +5,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Member
+from core.models import Member, Band
 
 from rockband.serializers import MemberSerializer
 
@@ -100,3 +100,59 @@ class PrivateMemberApiTests(TestCase):
         res = self.client.post(MEMBERS_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_retrieve_members_assigned_to_bands(self):
+        """
+        Test filtering members by those assigned to bands
+        :return:
+        """
+        member1 = Member.objects.create(
+            user=self.user, name='Joakim'
+        )
+        member2 = Member.objects.create(
+            user=self.user, name='Tony'
+        )
+        band = Band.objects.create(
+            title='Sabaton',
+            band_members=5,
+            tickets=55.5,
+            user=self.user
+        )
+        band.members.add(member1)
+
+        res = self.client.get(MEMBERS_URL, {'assigned_only': 1})
+
+        serializer1 = MemberSerializer(member1)
+        serializer2 = MemberSerializer(member2)
+        self.assertIn(serializer1.data, res.data)
+        self.assertNotIn(serializer2.data, res.data)
+
+    def Test_retrieve_members_assigned_unique(self):
+        """
+        Test filtering members by assigned returns unique items
+        :return:
+        """
+        member = Member.objects.create(
+            user=self.user, name='Joakim'
+        )
+        Member.objects.create(
+            user=self.user, name='Tony'
+        )
+        band1 = Band.objects.create(
+            title='Sabaton',
+            band_members=5,
+            tickets=55.5,
+            user=self.user
+        )
+        band1.members.add(member)
+        band2 = Band.objects.create(
+            title='Sonata',
+            band_members=5,
+            tickets=45.5,
+            user=self.user
+        )
+        band2.members.add(member)
+
+        res = self.client.get(MEMBERS_URL, {'assigned_only': 1})
+
+        self.assertEqual(len(res.data), 1)
